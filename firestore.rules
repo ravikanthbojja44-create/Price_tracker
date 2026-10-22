@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owns(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /products/{productId} {
+      allow read: if signedIn();
+      allow write: if false;
+
+      match /priceHistory/{entryId} {
+        allow read: if signedIn();
+        allow write: if false;
+      }
+    }
+
+    match /users/{userId}/trackedProducts/{productId} {
+      allow read, delete: if owns(userId);
+      allow create: if owns(userId)
+        && exists(/databases/$(database)/documents/products/$(productId))
+        && request.resource.data.keys().hasOnly([
+          'productId', 'targetPrice', 'createdAt'
+        ])
+        && request.resource.data.productId == productId
+        && request.resource.data.targetPrice is number
+        && request.resource.data.targetPrice > 0
+        && request.resource.data.createdAt == request.time;
+      allow update: if owns(userId)
+        && request.resource.data.keys().hasOnly([
+          'productId', 'targetPrice', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.productId == productId
+        && request.resource.data.productId == resource.data.productId
+        && request.resource.data.targetPrice is number
+        && request.resource.data.targetPrice > 0
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    match /users/{userId}/wishlist/{productId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId)
+        && exists(/databases/$(database)/documents/products/$(productId))
+        && request.resource.data.keys().hasOnly(['productId', 'addedAt'])
+        && request.resource.data.productId == productId
+        && request.resource.data.addedAt == request.time;
+    }
+
+    match /users/{userId}/alerts/{alertId} {
+      allow read: if owns(userId);
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
