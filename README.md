@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # price_tracker
 
 A new Flutter project.
@@ -94,3 +95,6 @@ The Cloud Function processes catalog changes supplied by a trusted importer or
 operator. It does not monitor retailers or fetch prices. Real retailer tracking
 requires a permitted retailer API or price-data provider and a separate
 scheduled backend process.
+=======
+# Price_tracker
+>>>>>>> 06f710dc32c93d5bd13212e6b0012e470cfe1b5d
