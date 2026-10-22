@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # price_tracker
 
 A new Flutter project.
